@@ -460,6 +460,8 @@ AND utm_campaign = 'nonbrand'
 GROUP BY 
 	website_pageviews.website_session_id,
 	WEEK(website_sessions.created_at);
+    
+SELECT * FROM paid_search_nonbrand_analysis;
 
 CREATE TEMPORARY TABLE nonbrand_traffic_home_and_lander
 SELECT 
@@ -488,6 +490,8 @@ GROUP BY
 	nonbrand_traffic_home_and_lander.website_session_id,
 	nonbrand_traffic_home_and_lander.landing_page
     HAVING COUNT(website_pageviews.website_pageview_id) = 1;
+    
+SELECT * FROM nonbrand_HL_weekly_bounce;
 
 -- Bounced Sessions as a result of switch from home to lander
 SELECT 
@@ -662,3 +666,275 @@ WHERE website_pageviews.pageview_url IN ('/billing','/billing-2');
 
 -- After this change gets rolled, might want to do own analysis, to confirm all customers are seeing billing 2 in the future
 -- May want to do analysis on your own to moinitor overall sales performance to see the impact of the test and see how you were able to drive sales for the business
+
+
+-- Channel Portfolio Optimization 
+SELECT 
+	utm_content,
+    COUNT(DISTINCT website_sessions.website_session_id) AS SESSIONS,
+    COUNT(DISTINCT orders.order_id) AS ORDERS,
+    COUNT(DISTINCT orders.order_id)/COUNT(DISTINCT website_sessions.website_session_id) AS session_to_order_conversion_rate 
+FROM website_sessions
+LEFT JOIN orders
+ON orders.website_session_id = website_sessions.website_session_id
+WHERE website_sessions.created_at BETWEEN '2014-01-01' AND '2014-02-01'
+GROUP BY 1
+ORDER BY 2 DESC;
+
+SELECT * FROM website_sessions;
+-- Tom decided to launch a second paid channel bsearch
+-- Run weekly trended session volume and compare to bsearch to get a sense of how important bsearch is
+SELECT 
+    MIN(DATE(created_at)) AS week_start,
+    COUNT(DISTINCT website_session_id) AS total_sessions,
+	COUNT(DISTINCT CASE WHEN utm_source = 'gsearch' THEN website_session_id ELSE NULL END) AS gsearch_sessions,
+	COUNT(DISTINCT CASE WHEN utm_source = 'bsearch' THEN website_session_id ELSE NULL END) AS bsearch_sessions
+FROM website_sessions
+WHERE created_at BETWEEN '2012-08-22' AND '2012-11-29'
+AND utm_campaign = 'nonbrand'
+GROUP BY WEEK(created_at);
+
+-- Pull Percentage of traffic coming for bsearch nonbrand from mobile and compare to gsearch for only nonbrand
+SELECT 
+	COUNT(DISTINCT website_session_id) AS total_sessions,
+    COUNT(DISTINCT CASE WHEN utm_source = 'bsearch' AND device_type = 'mobile' THEN website_session_id ELSE NULL END) sessions_bsearch_non_brand_mobile,
+    COUNT(DISTINCT CASE WHEN utm_source = 'gsearch' AND device_type = 'mobile' THEN website_session_id ELSE NULL END) sessions_gsearch_non_brand_mobile,
+    COUNT(DISTINCT CASE WHEN utm_source = 'bsearch' AND device_type = 'mobile' THEN website_session_id ELSE NULL END)/COUNT(DISTINCT website_session_id) AS percentage_bsearch_non_brand_mobile,
+	COUNT(DISTINCT CASE WHEN utm_source = 'gsearch' AND device_type = 'mobile' THEN website_session_id ELSE NULL END)/COUNT(DISTINCT website_session_id) AS percentage_gsearch_non_brand_mobile
+FROM website_sessions
+WHERE utm_campaign = 'nonbrand'
+AND created_at BETWEEN '2012-08-22' AND '2012-11-30';
+   
+ 
+	SELECT 
+    utm_source,
+	COUNT(DISTINCT website_session_id) AS total_sessions,
+    COUNT(DISTINCT CASE WHEN device_type = 'mobile' THEN website_session_id ELSE NULL END) mobile_sessions,
+	COUNT(DISTINCT CASE WHEN device_type = 'mobile' THEN website_session_id ELSE NULL END)/COUNT(DISTINCT website_session_id) AS percentage_mobile_sessions
+FROM website_sessions
+WHERE utm_campaign = 'nonbrand'
+AND utm_source IN ('bsearch','gsearch')
+AND created_at BETWEEN '2012-08-22' AND '2012-11-30'
+GROUP BY 1
+ORDER BY 4 DESC;
+
+-- Cross Channel Bid Optimization
+-- Should bsearch nonbrand traffic should have same bids as gsearch
+-- pull nonbrand conversion rates from session to order for gsearch and bsearch, and slice the data by device type
+-- Date range from August 22nd to September 18
+SELECT 
+	utm_content,
+    COUNT(DISTINCT website_sessions.website_session_id) AS SESSIONS,
+    COUNT(DISTINCT orders.order_id) AS ORDERS,
+    COUNT(DISTINCT orders.order_id)/COUNT(DISTINCT website_sessions.website_session_id) AS session_to_order_conversion_rate 
+FROM website_sessions
+LEFT JOIN orders
+ON orders.website_session_id = website_sessions.website_session_id
+WHERE website_sessions.created_at BETWEEN '2014-01-01' AND '2014-02-01'
+GROUP BY 1
+ORDER BY 2 DESC;
+
+SELECT * FROM website_sessions;
+-- Tom decided to launch a second paid channel bsearch
+-- Run weekly trended session volume and compare to bsearch to get a sense of how important bsearch is
+SELECT 
+	device_type,
+	utm_source,
+    COUNT(DISTINCT website_sessions.website_session_id) AS SESSIONS,
+    COUNT(DISTINCT orders.order_id) AS ORDERS,
+    COUNT(DISTINCT orders.order_id)/COUNT(DISTINCT website_sessions.website_session_id) AS session_to_order_conversion_rate 
+FROM website_sessions
+LEFT JOIN orders
+ON orders.website_session_id = website_sessions.website_session_id
+WHERE website_sessions.created_at BETWEEN '2012-08-22' AND '2012-09-19'
+AND utm_source IN ('bsearch','gsearch')
+AND utm_campaign = 'nonbrand'
+GROUP BY 1,2
+ORDER BY 3 DESC;
+
+-- Based on this analysis Tom will bid down bsearch 
+
+-- Channel portfolio trends
+-- Tom bid down bsearch nonbrand on December 2nd 
+-- Weekly session volume for gsearch and bsearch nonbrand by device since Nobember 4th 
+-- Comparison metric to show bsearch as a percentage of gsearch for each device that would help to see the relative volume
+SELECT 
+    MIN(DATE(created_at)) AS week_start,
+    COUNT(DISTINCT website_session_id) AS total_sessions,
+	COUNT(DISTINCT CASE WHEN utm_source = 'gsearch' AND device_type = 'desktop' THEN website_session_id ELSE NULL END) AS gsearch_dtop_sessions,
+	COUNT(DISTINCT CASE WHEN utm_source = 'bsearch' AND device_type = 'desktop' THEN website_session_id ELSE NULL END) AS bsearch_dtop_sessions,
+    COUNT(DISTINCT CASE WHEN utm_source = 'bsearch' AND device_type = 'desktop' THEN website_session_id ELSE NULL END)/COUNT(DISTINCT CASE WHEN utm_source = 'gsearch' AND device_type = 'desktop' THEN website_session_id ELSE NULL END) AS bsearch_percof_gsearch_dtop,
+	COUNT(DISTINCT CASE WHEN utm_source = 'gsearch' AND device_type = 'mobile' THEN website_session_id ELSE NULL END) AS gsearch_mobile_sessions,
+	COUNT(DISTINCT CASE WHEN utm_source = 'bsearch' AND device_type = 'mobile' THEN website_session_id ELSE NULL END) AS bsearch_mobile_sessions,
+    COUNT(DISTINCT CASE WHEN utm_source = 'bsearch' AND device_type = 'mobile' THEN website_session_id ELSE NULL END)/COUNT(DISTINCT CASE WHEN utm_source = 'gsearch' AND device_type = 'mobile' THEN website_session_id ELSE NULL END) AS bsearch_percof_gsearch_mobile
+FROM website_sessions
+WHERE created_at BETWEEN '2012-11-04' AND '2012-12-22'
+AND utm_campaign = 'nonbrand'
+GROUP BY WEEK(created_at);
+
+-- We see a drastic drop in bsearch sessions for both mobile and desktop and bsearch/gsearch percentage metric is also showing this trend as gsearch has remained stable
+-- but bsearch has reduced but looks steady on mobile, volume here is less sensitive to bid changes which is important
+-- We noticed that sessions did drop after black friday and cyber monday for both bsearch and gsearch but a lot more for bsearch
+
+-- Analyzing Direct Traffic
+-- get only null parameters 
+SELECT * 
+FROM website_sessions
+WHERE website_session_id BETWEEN 100000 and 115000
+AND utm_source IS NULL;
+
+-- http refere null was organic search
+SELECT 
+	CASE 
+		WHEN http_referer IS NULL THEN 'direct_type_in'
+        WHEN http_referer='https://www.gsearch.com' AND utm_source IS NULL THEN 'gsearch_organic'
+        WHEN http_referer='https://www.bsearch.com' AND utm_source IS NULL THEN 'bsearch_organic'
+        ELSE 'other'
+        END AS column_header,
+        COUNT(DISTINCT website_session_id) AS sessions
+FROM website_sessions
+WHERE website_session_id BETWEEN 100000 and 115000
+GROUP BY 1
+ORDER BY 2 DESC;
+
+-- Are we building our brand or are we relying on our current traffic
+SELECT 
+	YEAR(website_sessions.created_at),
+    MONTH(website_sessions.created_at),
+    COUNT(DISTINCT CASE WHEN utm_campaign = 'nonbrand' THEN website_session_id ELSE NULL END) AS nonbrand_sessions,
+	COUNT(DISTINCT CASE WHEN utm_campaign = 'brand' THEN website_session_id ELSE NULL END) AS brand_sessions,
+    COUNT(DISTINCT CASE WHEN utm_campaign = 'brand' THEN website_session_id ELSE NULL END)/COUNT(DISTINCT CASE WHEN utm_campaign = 'nonbrand' THEN website_session_id ELSE NULL END) AS brand_pct_of_nonbrand,
+	COUNT(DISTINCT CASE WHEN http_referer IS NULL THEN website_session_id ELSE NULL END) AS direct,
+    COUNT(DISTINCT CASE WHEN http_referer IS NULL THEN website_session_id ELSE NULL END)/COUNT(DISTINCT CASE WHEN utm_campaign = 'nonbrand' THEN website_session_id ELSE NULL END) AS direct_pct_of_nonbrand,
+	COUNT(DISTINCT CASE WHEN http_referer IN ('https://www.gsearch.com','https://www.bsearch.com') AND utm_source IS NULL THEN website_session_id ELSE NULL END) AS organic,
+	COUNT(DISTINCT CASE WHEN http_referer IN ('https://www.gsearch.com','https://www.bsearch.com') AND utm_source IS NULL THEN website_session_id ELSE NULL END)/COUNT(DISTINCT CASE WHEN utm_campaign = 'nonbrand' THEN website_session_id ELSE NULL END) AS organic_pct_of_nonbrand
+FROM website_sessions
+WHERE created_at < '2012-12-23'
+GROUP BY 1,2;
+
+-- Alternative method to produce this 
+-- All website sessions, when they were created and a channel group
+-- i.e. all website_session_ids and which channel group they belong to
+SELECT 
+	website_session_id, 
+    created_at,
+    CASE
+		WHEN utm_source IS NULL AND http_referer IN ('https://www.gsearch.com','https://www.bsearch.com') THEN 'organic_search'
+        WHEN utm_campaign = 'nonbrand' THEN 'paid_nonbrand'
+        WHEN utm_campaign = 'brand' THEN 'paid_brand'
+        WHEN utm_source IS NULL AND http_referer IS NULL THEN 'direct_type_in'
+	END AS channel_group
+FROM website_sessions
+WHERE created_at < '2012-12-23';
+
+-- Now create a subquery within this query 
+SELECT
+	YEAR(created_at) AS yr,
+    MONTH(created_at) AS mo,
+    COUNT(DISTINCT CASE WHEN channel_group = 'paid_nonbrand' THEN website_session_id ELSE NULL END) AS nonbrand,
+	COUNT(DISTINCT CASE WHEN channel_group = 'paid_brand' THEN website_session_id ELSE NULL END) AS brand,
+    COUNT(DISTINCT CASE WHEN channel_group = 'paid_brand' THEN website_session_id ELSE NULL END)/COUNT(DISTINCT CASE WHEN channel_group = 'paid_nonbrand' THEN website_session_id ELSE NULL END) AS brand_pct_of_nonbrand,
+	COUNT(DISTINCT CASE WHEN channel_group = 'direct_type_in' THEN website_session_id ELSE NULL END) AS direct,
+	COUNT(DISTINCT CASE WHEN channel_group = 'direct_type_in' THEN website_session_id ELSE NULL END)/COUNT(DISTINCT CASE WHEN channel_group = 'paid_nonbrand' THEN website_session_id ELSE NULL END) AS direct_pct_of_nonbrand,
+	COUNT(DISTINCT CASE WHEN channel_group = 'organic_search' THEN website_session_id ELSE NULL END) AS organic,
+	COUNT(DISTINCT CASE WHEN channel_group = 'organic_search' THEN website_session_id ELSE NULL END)/COUNT(DISTINCT CASE WHEN channel_group = 'paid_nonbrand' THEN website_session_id ELSE NULL END) AS organic_pct_of_nonbrand
+FROM (
+SELECT 
+	website_session_id, 
+    created_at,
+    CASE
+		WHEN utm_source IS NULL AND http_referer IN ('https://www.gsearch.com','https://www.bsearch.com') THEN 'organic_search'
+        WHEN utm_campaign = 'nonbrand' THEN 'paid_nonbrand'
+        WHEN utm_campaign = 'brand' THEN 'paid_brand'
+        WHEN utm_source IS NULL AND http_referer IS NULL THEN 'direct_type_in'
+	END AS channel_group
+FROM website_sessions
+WHERE created_at < '2012-12-23') AS session_w_channel_group
+GROUP BY YEAR(created_at), MONTH(created_at);
+
+-- Analyzing seasonality and business patterns 
+-- Numbers for weekday are 0 to 6, 0 Monday, 1 tuesday
+-- Could use this to do case statements 
+SELECT 
+	website_session_id,
+    created_at,
+    HOUR(created_at) AS hr,
+    WEEKDAY(created_at) as wkday
+FROM website_sessions
+WHERE website_session_id BETWEEN 150000 and 155000;
+
+SELECT 
+	website_session_id,
+    created_at,
+    HOUR(created_at) AS hr,
+    WEEKDAY(created_at) as wkday,
+    CASE 
+		WHEN WEEKDAY(created_at) = 0 THEN 'Monday'
+        WHEN WEEKDAY(created_at) = 1 THEN 'Tuesday'
+		WHEN WEEKDAY(created_at) = 2 THEN 'Wednesday'
+		WHEN WEEKDAY(created_at) = 3 THEN 'Thursday'
+		WHEN WEEKDAY(created_at) = 4 THEN 'Friday'
+		WHEN WEEKDAY(created_at) = 5 THEN 'Saturday'
+		WHEN WEEKDAY(created_at) = 6 THEN 'Sunday'
+		END AS clean_weekday,
+        QUARTER(created_at) AS qtr,
+        MONTH(created_at) AS mo,
+        WEEK(created_at) AS week
+FROM website_sessions
+WHERE website_session_id BETWEEN 150000 and 155000;
+
+-- Business Seasonality, understand monthly and weekly volumes
+-- Take a look at 2012's monthly and weekly volume
+-- Pull Session and Order Volume
+SELECT 
+	YEAR(website_sessions.created_at) AS yr,
+    MONTH(website_sessions.created_at) AS mo,
+	COUNT(DISTINCT website_sessions.website_session_id) AS sessions,
+    COUNT(DISTINCT orders.order_id) AS orders
+FROM website_sessions
+LEFT JOIN orders
+ON website_sessions.website_session_id = orders.website_session_id
+WHERE website_sessions.created_at < '2012-12-31'
+GROUP BY 1,2;
+
+SELECT 
+	MIN(DATE(website_sessions.created_at)) AS week_start,
+	COUNT(DISTINCT website_sessions.website_session_id) AS sessions,
+    COUNT(DISTINCT orders.order_id) AS orders
+FROM website_sessions
+LEFT JOIN orders
+ON website_sessions.website_session_id = orders.website_session_id
+WHERE website_sessions.created_at < '2012-12-31'
+GROUP BY WEEK(website_sessions.created_at);
+
+-- Steady growth all year and major increases from 18th of November to end of November due to 
+-- Friday and Cyber Monday, keep surge in mind and accomodate customer support and inventory management
+
+-- Cindy is thinking about adding live chat support option on the website
+-- Asked you to analyze average website session volume by hour of day and day of the week
+-- Need to see how many customer service chat reps we would need for this analysis
+-- Let's avvoid holiday time and target date range between September 15th to November 15th
+SELECT 
+	HOUR(created_at) AS hr,
+	COUNT(DISTINCT CASE WHEN clean_weekday = 'Monday' THEN website_session_id ELSE NULL END)/COUNT(hr),
+	COUNT(DISTINCT CASE WHEN clean_weekday = 'Tuesday' THEN website_session_id ELSE NULL END)/COUNT(hr),
+	COUNT(DISTINCT CASE WHEN clean_weekday = 'Wednesday' THEN website_session_id ELSE NULL END)/COUNT(hr),
+	COUNT(DISTINCT CASE WHEN clean_weekday = 'Thursday' THEN website_session_id ELSE NULL END)/COUNT(hr),
+	COUNT(DISTINCT CASE WHEN clean_weekday = 'Friday' THEN website_session_id ELSE NULL END)/COUNT(hr),
+	COUNT(DISTINCT CASE WHEN clean_weekday = 'Saturday' THEN website_session_id ELSE NULL END)/COUNT(hr),
+	COUNT(DISTINCT CASE WHEN clean_weekday = 'Saturday' THEN website_session_id ELSE NULL END)/COUNT(hr),
+FROM (
+    HOUR(created_at) AS hr,
+    CASE 
+		WHEN WEEKDAY(created_at) = 0 THEN 'Monday'
+        WHEN WEEKDAY(created_at) = 1 THEN 'Tuesday'
+		WHEN WEEKDAY(created_at) = 2 THEN 'Wednesday'
+		WHEN WEEKDAY(created_at) = 3 THEN 'Thursday'
+		WHEN WEEKDAY(created_at) = 4 THEN 'Friday'
+		WHEN WEEKDAY(created_at) = 5 THEN 'Saturday'
+		WHEN WEEKDAY(created_at) = 6 THEN 'Sunday'
+		END AS clean_weekday
+FROM website_sessions
+WHERE website_sessions.created_at BETWEEN '2012-09-15' AND '2012-11-15') AS weekday_cleanup)
+GROUP BY 1;
+

@@ -162,11 +162,14 @@ FROM website_sessions
 WHERE created_at <'2012-11-27'
 AND website_session_id > 17145
 AND utm_source = 'gsearch'
-AND utm_campaign = 'nonbrand'
+AND utm_campaign = 'nonbrand';
 
 -- There were 22972 sessions since the test 
 -- As a result you multiply 22972 by the incremental conversion rate
 -- i.e. 0.0406-0.0318 = 0.0088 * 22972 around 202
 -- this happened for another 4 months since we test ended at end of July
 -- So an extra 202 orders over a 4 month period as a result of this change
+
+-- From previous landing page show full conversion funnel for each of two pages to orders
+
 
