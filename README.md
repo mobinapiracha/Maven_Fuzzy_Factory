@@ -23,4 +23,8 @@ We conducted two A/B tests, one by testing a new lander page titled "lander-1" w
 
 The metrics Cindy is requesting would play an important role in helping the board understand the growth, performance and overall health of the new business and ensure investor confidence moving forward. 
 
-### 
+## Results 
+
+The following are the results providing the growth, performance and health for the first 8 months of its inception (for detailed queries please refer to PerformanceMetrics_and_Growth_11_27_2012.sql)
+
+### Gsearch Performance Metrics 
