@@ -28,4 +28,4 @@ The metrics Cindy is requesting would play an important role in helping the boar
 The following are the results providing the growth, performance and health for the first 8 months of its inception (for detailed queries please refer to PerformanceMetrics_and_Growth_11_27_2012.sql)
 
 ### Gsearch Performance Metrics 
-
+#### Monthly gsearch website sessions
