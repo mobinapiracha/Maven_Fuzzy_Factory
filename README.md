@@ -28,5 +28,34 @@ The metrics Cindy is requesting would play an important role in helping the boar
 The following are the results providing the growth, performance and health for the first 8 months of its inception (for detailed queries please refer to PerformanceMetrics_and_Growth_11_27_2012.sql)
 
 ### Gsearch Performance Metrics 
-#### Monthly gsearch website sessions
+#### Monthly Gsearch Website Sessions
 ![This is a alt text.](/images/Monthly_trends_gsearch.png)
+* The analysis above illustrates gsearch performance this year, we see a steady increase in sessions and orders increasing from 3574 sessions and 92 orders in the month of April to 5534 sessions and 234 orders in the month of October, we see a large increase of 373 orders and 8889 sessions in the month of November, which we suspect is the result of Black Friday, Cyber Monday and the beginning of Holiday shopping season. The analysis illustrates steady healthy growth in both website traffic and revenue from orders 
+
+#### Monthly Sessions and Orders for Gsearch Brand and Nonbrand 
+![This is a alt text.](/images/Brand_nonbrand_monthlysessions.png)
+* The results from Nonbrand vs Brand Monthly trends shows a steady increase in both brand and nonbrand orders, this is a positive indication as a steady increase in brand orders and sessions indicates growing reputation of Fuzzy Factory, while the nonbrand sessions rise indicates that the company revenue and traffic is steadily increasing
+
+### Nonbrand Orders by Device Type 
+![This is a alt text.](/images/Monthly_trends_by_device.png)
+* Monthly trends by device type show steady rise in nonbrand desktop orders, however, we see a mixed bag for mobile orders, in some cases only being in single digits, however exibiting strong Black Friday and Cyber Monday performance. We may ask the Marketing Director Tom Parmesan to bid down on nonbrand mobile and focus more on Desktop sessions. 
+* It may also be feasible to check out and possibly modify the mobile website as a bad mobile user experience may be the reason for slow orders. 
+
+### Overall Business Performance
+
+#### Overall Session to Order Conversion Rate 
+![This is a alt text.](/images/session_to_order_cov_rate.png)
+* When analyzing the session to order conversion rate by month, we see a similar positive upward trend, an increase from 3.19% in April of 2012 to 4.53% in October of 2012. The board should be pleased to see this steady growth and healthy performance as it is indicative of both growing business reputation through organic search & type in but also steady conversions through paid advertising sources. 
+
+### A/B Test Results 
+# Lander-1 Analysis 
+![This is a alt text.](/images/first_instance_of_lander1.png)
+* * In order to estimate the revenue from our test, we first need to find the first instance of lander-1, From the query above we see that lander-1 is pageview 23504 on June 19th
+
+![This is a alt text.](/images/website_session_and_pageviewids_lander1.png)
+* Now we find all the sessions and pageviews after 23504 for gsearch nonbrand as that will be the starting point of our analysis
+
+![This is a alt text.](/images/website_session_and_pageviewids_lander1.png)
+![This is a alt text.](/images/nonbrand_sessionsandorders.png)
+* By joining website sessions and pageviews table by session id filtering for only home and lander-1 we now get only sessions for both home and lander-1
+* Now we simply add the orders table to see which of these sessions converted to orders
