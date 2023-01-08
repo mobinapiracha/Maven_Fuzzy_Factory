@@ -62,6 +62,7 @@ The following are the results providing the growth, performance and health for t
 
 ![This is a alt text.](/images/conversion_rate_diff_home_vs_lander.png)
 ![This is a alt text.](/images/most_recent_gsearch_nonbrand_pageview.png)
+![This is a alt text.](/images/sessions_since_test.png)
 * Now that we have both our sessions and orders we do a simple aggregation to get our total sessions, orders and conversion rate for both our landing pages and we find a difference of 0.0088 in conversion rates 
 * We find the most recent pageview where the traffic was sent to home and we simply leverage the 17145 website session to create another query to calculate the total number of sessions since the test was created, we find that we had 22972 sessions since we started the test
-* As a result our increase in revenue from the test is the difference in conversion rates i.e. 0.0088 by 22972 
+* As a result our increase in revenue from the test is the difference in conversion rates i.e. 0.0088 by 22972 and we get an increase of 202 orders over 4 months as a result of this change 
