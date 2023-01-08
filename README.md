@@ -29,3 +29,4 @@ The following are the results providing the growth, performance and health for t
 
 ### Gsearch Performance Metrics 
 #### Monthly gsearch website sessions
+![This is a alt text.](/images/Monthly_trends_gsearch.png)
