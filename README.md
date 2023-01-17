@@ -48,7 +48,7 @@ The following are the results providing the growth, performance and health for t
 * When analyzing the session to order conversion rate by month, we see a similar positive upward trend, an increase from 3.19% in April of 2012 to 4.53% in October of 2012. The board should be pleased to see this steady growth and healthy performance as it is indicative of both growing business reputation through organic search & type in but also steady conversions through paid advertising sources. 
 
 ### A/B Test Results 
-# Lander-1 Analysis 
+#### Lander-1 Analysis 
 ![This is a alt text.](/images/first_instance_of_lander1.png)
 * * In order to estimate the revenue from our test, we first need to find the first instance of lander-1, From the query above we see that lander-1 is pageview 23504 on June 19th
 
@@ -66,3 +66,6 @@ The following are the results providing the growth, performance and health for t
 * Now that we have both our sessions and orders we do a simple aggregation to get our total sessions, orders and conversion rate for both our landing pages and we find a difference of 0.0088 in conversion rates 
 * We find the most recent pageview where the traffic was sent to home and we simply leverage the 17145 website session to create another query to calculate the total number of sessions since the test was created, we find that we had 22972 sessions since we started the test
 * As a result our increase in revenue from the test is the difference in conversion rates i.e. 0.0088 multiply 22972 sessions and we get an increase of 202 orders over 4 months as a result of this change 
+
+#### Billing-2 Analysis
+
