@@ -915,26 +915,183 @@ GROUP BY WEEK(website_sessions.created_at);
 -- Need to see how many customer service chat reps we would need for this analysis
 -- Let's avvoid holiday time and target date range between September 15th to November 15th
 SELECT 
-	HOUR(created_at) AS hr,
-	COUNT(DISTINCT CASE WHEN clean_weekday = 'Monday' THEN website_session_id ELSE NULL END)/COUNT(hr),
-	COUNT(DISTINCT CASE WHEN clean_weekday = 'Tuesday' THEN website_session_id ELSE NULL END)/COUNT(hr),
-	COUNT(DISTINCT CASE WHEN clean_weekday = 'Wednesday' THEN website_session_id ELSE NULL END)/COUNT(hr),
-	COUNT(DISTINCT CASE WHEN clean_weekday = 'Thursday' THEN website_session_id ELSE NULL END)/COUNT(hr),
-	COUNT(DISTINCT CASE WHEN clean_weekday = 'Friday' THEN website_session_id ELSE NULL END)/COUNT(hr),
-	COUNT(DISTINCT CASE WHEN clean_weekday = 'Saturday' THEN website_session_id ELSE NULL END)/COUNT(hr),
-	COUNT(DISTINCT CASE WHEN clean_weekday = 'Saturday' THEN website_session_id ELSE NULL END)/COUNT(hr),
+	hr,
+    ROUND(AVG(CASE WHEN wkday = 0 THEN website_sessions ELSE NULL END),2) AS Monday,
+	ROUND(AVG(CASE WHEN wkday = 1 THEN website_sessions ELSE NULL END),2) AS Tuesday,
+	ROUND(AVG(CASE WHEN wkday = 2 THEN website_sessions ELSE NULL END),2) AS Wednesday,
+    ROUND(AVG(CASE WHEN wkday = 3 THEN website_sessions ELSE NULL END),2) AS Thursday,
+    ROUND(AVG(CASE WHEN wkday = 4 THEN website_sessions ELSE NULL END),2) AS Friday,
+    ROUND(AVG(CASE WHEN wkday = 5 THEN website_sessions ELSE NULL END),2) AS Saturday,
+    ROUND(AVG(CASE WHEN wkday = 6 THEN website_sessions ELSE NULL END),2) AS Sunday
 FROM (
-    HOUR(created_at) AS hr,
-    CASE 
-		WHEN WEEKDAY(created_at) = 0 THEN 'Monday'
-        WHEN WEEKDAY(created_at) = 1 THEN 'Tuesday'
-		WHEN WEEKDAY(created_at) = 2 THEN 'Wednesday'
-		WHEN WEEKDAY(created_at) = 3 THEN 'Thursday'
-		WHEN WEEKDAY(created_at) = 4 THEN 'Friday'
-		WHEN WEEKDAY(created_at) = 5 THEN 'Saturday'
-		WHEN WEEKDAY(created_at) = 6 THEN 'Sunday'
-		END AS clean_weekday
+SELECT 
+	DATE(created_at) AS created_date, 
+    WEEKDAY(created_at) AS wkday, 
+    HOUR(created_at) AS hr, 
+    COUNT(DISTINCT website_session_id) AS website_sessions
 FROM website_sessions
-WHERE website_sessions.created_at BETWEEN '2012-09-15' AND '2012-11-15') AS weekday_cleanup)
+WHERE created_at BETWEEN '2012-09-15' AND '2012-11-15'
+GROUP BY 1,2,3) AS daily_hourly_sessions
+GROUP BY 1
+ORDER BY 1;
+
+-- Product Sales Analysis 
+SELECT 
+	COUNT(order_id) AS orders, 
+    SUM(price_usd) AS revenue, 
+    SUM(price_usd - cogs_usd) AS margin, 
+    AVG(price_usd) AS average_order_value
+FROM orders
+WHERE order_id BETWEEN 100 AND 200;
+
+-- Orders by product
+-- Product 1 way too many orders, product 2 and 3 are behind and are equal to each other
+SELECT 
+	primary_product_id,
+    COUNT(order_id) AS total_orders,
+    SUM(price_usd) AS total_revenue,
+    SUM(price_usd - cogs_usd) total_margin,
+    AVG(price_usd) AS Average_Revenue_Per_Order
+FROM orders 
+WHERE order_id BETWEEN 10000 AND 11000 
+GROUP BY 1
+ORDER BY 2 DESC;
+
+-- Current Flagship Product Overview
+SELECT 
+	YEAR(created_at) AS Yearly,
+    MONTH(created_at) AS Monthly,
+	COUNT(order_id) AS Total_Orders,
+    SUM(price_usd) AS Total_Revenue,
+    SUM(price_usd - cogs_usd) Total_Margin,
+    AVG(price_usd) AS Average_Revenue_Per_Order
+FROM orders 
+WHERE created_at < '2013-04-01'
+GROUP BY 1,2;
+
+-- Analyzing a product launch
+-- Cindy launched product on January 6th want to see how the product did
+-- All time period between April 1, 2012 to April 5, 2013
+use mavenfuzzyfactory;
+SELECT 
+	YEAR(website_sessions.created_at) AS year, 
+    MONTH(website_sessions.created_at) AS month, 
+    COUNT(orders.order_id) AS orders,
+    COUNT(DISTINCT orders.order_id)/COUNT(DISTINCT website_sessions.website_session_id) AS conv_rate,
+    SUM(orders.price_usd)/COUNT(DISTINCT website_sessions.website_session_id) AS revenue_per_session, 
+    COUNT(DISTINCT CASE WHEN primary_product_id = 1 THEN order_id ELSE NULL END) AS product_one_orders,
+	COUNT(DISTINCT CASE WHEN primary_product_id = 2 THEN order_id ELSE NULL END) AS product_two_orders
+FROM website_sessions
+LEFT JOIN orders
+ON website_sessions.website_session_id = orders.website_session_id 
+AND orders.created_at BETWEEN '2012-04-01' AND '2013-04-01'
+GROUP BY 1,2;
+
+-- Analyzing Product Level Website Pathing
+-- Use website pageviews data to identify users who viewed /products page, and see which products they clicked next 
+-- From specific product pages we look at view to order conversion rates and create multi step conversion funnels 
+-- Use temporary tables to break your query into small steps 
+SELECT DISTINCT 
+	pageview_url
+FROM website_pageviews
+WHERE created_at BETWEEN '2013-02-01' AND '2013-03-01';
+-- two products, mr. fuzzy and forever love bear
+
+-- Pageview urls and website_session_id
+SELECT 
+	-- website_session_id,
+    website_pageviews.pageview_url,
+    COUNT(DISTINCT website_pageviews.website_session_id) AS sessions,
+    COUNT(DISTINCT orders.order_id) AS orders,
+	COUNT(DISTINCT orders.order_id)/COUNT(DISTINCT website_pageviews.website_session_id) AS viewed_product_to_order_rate
+FROM website_pageviews
+LEFT JOIN orders
+	ON orders.website_session_id = website_pageviews.website_session_id
+WHERE website_pageviews.created_at BETWEEN '2013-02-01' AND '2013-03-01'
+AND pageview_url IN ('/the-original-mr-fuzzy','/the-forever-love-bear')
 GROUP BY 1;
 
+-- Even though forever love bear had less sessions, viewed product to order rate was higher for love bear (20%) than fuzzy (17%)
+
+-- Analyze the impact of new product launch of custmer website behavior
+-- How many customers are hitting your product page, and what they are doing next
+-- Analyze clickthrough rate and performance 3 months leading up to launcha and 3 months since launch
+-- First instance of product 2 hence date of launch
+SELECT 
+	pageview_url,
+    MIN(website_pageviews.website_session_id),
+    created_at
+FROM website_pageviews
+WHERE website_pageviews.pageview_url IN ('/the-forever-love-bear');
+
+
+
+-- Step 1 find all relevant products pageview and grab session ID i.e users that saw products pageview page
+-- Step 2 find next pageview that occurs after products pageview
+-- Step 3 Find associated url, to find if they went to mr.fuzzy page or forever love bear page
+-- Step 4 Summarize the data and analyze the pre vs post periods 
+
+-- Step 1 find all relevant products pageview and grab session ID i.e users that saw products pageview page
+-- 3 months prior to product 2 launch would be 2012-10-06
+-- Limiting to pageview url products 
+CREATE TEMPORARY TABLE products_pageviews
+SELECT
+	website_session_id,
+    website_pageview_id, 
+    created_at,
+    CASE
+		WHEN created_at <'2013-01-06' THEN 'A. Pre_Product_2'
+        WHEN created_at >= '2013-01-06' THEN 'B. Post_Product_2'
+        ELSE 'uh oh check logic...'
+	END AS time_period
+FROM website_pageviews
+WHERE created_at BETWEEN '2012-10-06' AND '2013-04-06'
+AND pageview_url = '/products';
+
+SELECT * FROM products_pageviews;
+
+-- Step 2 find next pageview that occurs after products pageview
+CREATE TEMPORARY TABLE sessions_w_next_pageview
+SELECT 
+	products_pageviews.time_period,
+    products_pageviews.website_session_id,
+    MIN(website_pageviews.website_pageview_id) AS min_next_pageview_id
+FROM products_pageviews
+LEFT JOIN website_pageviews
+	ON website_pageviews.website_session_id = products_pageviews.website_session_id
+    AND website_pageviews.website_pageview_id > products_pageviews.website_pageview_id
+GROUP BY 1,2;
+
+SELECT * 
+FROM sessions_w_next_pageview;
+
+-- Step 3 Find associated url, to find if they went to mr.fuzzy page or forever love bear page
+CREATE TEMPORARY TABLE session_w_next_pageview_url
+SELECT 
+	sessions_w_next_pageview.time_period, 
+    sessions_w_next_pageview.website_session_id, 
+    website_pageviews.pageview_url AS next_pageview_url 
+FROM sessions_w_next_pageview
+LEFT JOIN website_pageviews
+ON website_pageviews.website_pageview_id = sessions_w_next_pageview.min_next_pageview_id;
+
+SELECT * 
+FROM session_w_next_pageview_url;
+
+-- Step 4: Summarize the data and analyze pre vs post period
+SELECT 
+	time_period, 
+    COUNT(DISTINCT website_session_id) AS sessions,
+    COUNT(DISTINCT CASE WHEN next_pageview_url IS NOT NULL THEN website_session_id ELSE NULL END) AS w_next_pg,
+    COUNT(DISTINCT CASE WHEN next_pageview_url IS NOT NULL THEN website_session_id ELSE NULL END)/COUNT(DISTINCT website_session_id) AS pct_w_next_pg,
+    COUNT(DISTINCT CASE WHEN next_pageview_url = '/the-original-mr-fuzzy' THEN website_session_id ELSE NULL END) AS to_mrfuzzy,
+    COUNT(DISTINCT CASE WHEN next_pageview_url = '/the-original-mr-fuzzy' THEN website_session_id ELSE NULL END)/COUNT(DISTINCT website_session_id) AS pct_to_mrfuzzy,
+    COUNT(DISTINCT CASE WHEN next_pageview_url = '/the-forever-love-bear' THEN website_session_id ELSE NULL END) AS to_lovebear,
+    COUNT(DISTINCT CASE WHEN next_pageview_url = '/the-forever-love-bear' THEN website_session_id ELSE NULL END)/COUNT(DISTINCT website_session_id) AS pct_to_lovebear
+FROM session_w_next_pageview_url
+GROUP BY time_period;
+
+-- Both product conversion funnel from each product page to a sale event, comparison between two funnel to see which of the products converts better
+-- And see two different queries
+-- 1st Number of Sessions, to Cart, To Shipping to Billing
+-- CTR for product, cart, shipping and billing
