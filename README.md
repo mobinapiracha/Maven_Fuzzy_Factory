@@ -68,4 +68,16 @@ The following are the results providing the growth, performance and health for t
 * As a result our increase in revenue from the test is the difference in conversion rates i.e. 0.0088 multiply 22972 sessions and we get an increase of 202 orders over 4 months as a result of this change 
 
 #### Billing-2 Analysis
+Cindy wants us to quantify the impact the new billing page had on our website, therefore we will assess this by estimating the lift in revenue per billing session we received as a result of this test and she also wants us to pull the number of billing sessions in the past month to understand the impact of the test
 
+![This is a alt text.](/images/first_date_billing2.png)
+* In order to conduct this analysis we find the first instance of the billing-2 page i.e. pageview number 53550 and our analysis will be limited to all pageviews after 53550
+
+![This is a alt text.](/images/billing_vs_billing2_revenue_per_session.png)
+* Next we join the orders and website pageviews, limiting to pageview urls for the two billing pages '/billing' and 'billing2' for the date range between September to November 2012, and we put this query within a subquery and aggregate sessions, orders, revenue and revenue per billing session grouping by billing versions
+* Subtracting the revenue per billing sessions for '/billing' and 'billing2' we get a difference $8.51 in terms of revenue per billing session, so everytime a customer sees a billing page, we are making 8.50 more than previously
+
+![This is a alt text.](/images/billin_sessions_past_month.png)
+* Next we find out the number of billing sessions in the past month by counting all website sessions for both billing pages '/billing' and '/billing2' and we get a total of 1193 billing sessions in the past month
+* We miltiply 1193 by difference in revenue per session i.e. 8.50 and we end up with 10,160 dollars over the past month
+* Therefore, we can conclude that changes in the billling page generated quite a significant lift for the business
