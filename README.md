@@ -1,4 +1,4 @@
-# Fuzzy Factory
+# eCommerce Performance Analysis with SQL
 
 ## Overview 
 Fuzzy Factory is a newly launched ecommerce startup looking to break into the market with its new product Mr. Fuzzy. The company has a SQL database with a number of tables from website sessions, website pageviews, orders and a number of other tables (order items refund, order items, products). As a database analyst, they've hired you to utilize the SQL tables provided in order to analyze business performance and provide recommendations regarding avenues for business growth. 
